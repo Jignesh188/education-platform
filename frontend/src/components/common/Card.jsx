@@ -1,7 +1,11 @@
-export default function Card({ children, className = '', onClick }) {
+export default function Card({ children, className = '', onClick, hover = false }) {
     return (
         <div
-            className={`bg-white rounded-2xl p-6 border border-slate-200 shadow-sm ${onClick ? 'cursor-pointer hover:shadow-md hover:border-slate-300 transition-all' : ''} ${className}`}
+            className={`
+                card-base 
+                ${hover || onClick ? 'card-hover cursor-pointer' : ''} 
+                ${className}
+            `}
             onClick={onClick}
         >
             {children}

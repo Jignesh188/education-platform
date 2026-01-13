@@ -4,6 +4,7 @@ import QuestionCard from '../components/quiz/QuestionCard';
 import Button from '../components/common/Button';
 import Badge from '../components/common/Badge';
 import Loader from '../components/common/Loader';
+import Card from '../components/common/Card';
 import { quizAPI } from '../api/quiz';
 import { HiOutlineClock, HiOutlineExclamationTriangle, HiOutlineArrowLeft } from 'react-icons/hi2';
 
@@ -91,21 +92,22 @@ export default function TakeExam() {
     const progress = (answeredCount / quiz.questions.length) * 100;
 
     return (
-        <div className="p-6">
+        <div className="p-6 max-w-4xl mx-auto space-y-6">
             {/* Back Button */}
-            <button
+            <Button
+                variant="ghost"
                 onClick={() => navigate('/quizzes')}
-                className="flex items-center gap-2 text-slate-500 hover:text-slate-700 mb-6 font-medium transition-colors text-sm"
+                className="pl-0 text-slate-500 hover:text-slate-700 font-medium h-auto"
             >
-                <HiOutlineArrowLeft className="w-4 h-4" />
+                <HiOutlineArrowLeft className="w-4 h-4 mr-2" />
                 Back to Quizzes
-            </button>
+            </Button>
 
             {/* Exam Header */}
-            <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm mb-6">
+            <Card className="p-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-xl font-bold mb-2 text-slate-800">{quiz.title}</h1>
+                        <h1 className="text-xl font-bold mb-2 text-slate-900">{quiz.title}</h1>
                         <div className="flex items-center gap-3">
                             <Badge variant={quiz.difficulty}>{quiz.difficulty}</Badge>
                             <span className="text-sm text-slate-500 font-medium">
@@ -114,7 +116,7 @@ export default function TakeExam() {
                         </div>
                     </div>
                     <div className="text-right">
-                        <div className="flex items-center gap-2 text-2xl font-mono font-bold text-slate-800">
+                        <div className="flex items-center gap-2 text-2xl font-mono font-bold text-slate-900">
                             <HiOutlineClock className="w-6 h-6 text-blue-600" />
                             {formatTime(timeElapsed)}
                         </div>
@@ -125,26 +127,26 @@ export default function TakeExam() {
                 </div>
 
                 {/* Progress bar */}
-                <div className="mt-5">
-                    <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                <div className="mt-6">
+                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
                         <div
-                            className="h-full bg-blue-600 rounded-full transition-all"
+                            className="h-full bg-blue-600 rounded-full transition-all duration-500 ease-out"
                             style={{ width: `${progress}%` }}
                         />
                     </div>
                 </div>
-            </div>
+            </Card>
 
             {/* Question Navigation */}
-            <div className="flex gap-2 mb-6 flex-wrap">
+            <div className="flex gap-2 flex-wrap">
                 {quiz.questions.map((q, index) => (
                     <button
                         key={q.id}
                         onClick={() => setCurrentQuestion(index)}
                         className={`w-10 h-10 rounded-xl font-semibold text-sm transition-all ${currentQuestion === index
-                            ? 'bg-blue-900 text-white shadow-sm'
+                            ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-600 ring-offset-2'
                             : answers[q.id]
-                                ? 'bg-emerald-500 text-white'
+                                ? 'bg-emerald-500 text-white shadow-sm'
                                 : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300'
                             }`}
                     >
@@ -164,11 +166,12 @@ export default function TakeExam() {
             />
 
             {/* Navigation */}
-            <div className="flex items-center justify-between mt-6">
+            <div className="flex items-center justify-between pt-4">
                 <Button
                     variant="secondary"
                     onClick={() => setCurrentQuestion(q => Math.max(0, q - 1))}
                     disabled={currentQuestion === 0}
+                    className="w-32"
                 >
                     Previous
                 </Button>
@@ -177,6 +180,7 @@ export default function TakeExam() {
                     {currentQuestion < quiz.questions.length - 1 ? (
                         <Button
                             onClick={() => setCurrentQuestion(q => q + 1)}
+                            className="w-32"
                         >
                             Next
                         </Button>
@@ -185,6 +189,7 @@ export default function TakeExam() {
                             variant="success"
                             onClick={handleSubmit}
                             loading={submitting}
+                            className="px-8"
                         >
                             Submit Exam
                         </Button>
@@ -195,9 +200,9 @@ export default function TakeExam() {
             {/* Unanswered Warning */}
             {currentQuestion === quiz.questions.length - 1 &&
                 answeredCount < quiz.questions.length && (
-                    <div className="mt-4 p-4 bg-amber-50 border border-amber-100 rounded-2xl flex items-center gap-3">
+                    <div className="mt-4 p-4 bg-amber-50 border border-amber-100 rounded-2xl flex items-center gap-3 animate-pulse">
                         <HiOutlineExclamationTriangle className="w-5 h-5 text-amber-600" />
-                        <p className="text-sm text-amber-700 font-medium">
+                        <p className="text-sm text-amber-900 font-medium">
                             You have {quiz.questions.length - answeredCount} unanswered question(s)
                         </p>
                     </div>

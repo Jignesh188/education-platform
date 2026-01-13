@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Badge from '../components/common/Badge';
 import QuestionCard from '../components/quiz/QuestionCard';
 import Loader from '../components/common/Loader';
+import Card from '../components/common/Card';
+import Button from '../components/common/Button';
 import { quizAPI } from '../api/quiz';
 import {
     HiOutlineTrophy,
@@ -51,24 +53,25 @@ export default function ExamResults() {
     const isAverage = result.score_percentage >= 50 && result.score_percentage < 70;
 
     return (
-        <div className="p-6">
+        <div className="p-6 max-w-4xl mx-auto space-y-6">
             {/* Back Button */}
-            <button
+            <Button
+                variant="ghost"
                 onClick={() => navigate('/quizzes')}
-                className="flex items-center gap-2 text-slate-500 hover:text-slate-700 mb-6 font-medium transition-colors text-sm"
+                className="pl-0 text-slate-500 hover:text-slate-700 font-medium h-auto"
             >
-                <HiOutlineArrowLeft className="w-4 h-4" />
+                <HiOutlineArrowLeft className="w-4 h-4 mr-2" />
                 Back to Quizzes
-            </button>
+            </Button>
 
             {/* Score Card */}
-            <div className="bg-white rounded-2xl p-10 border border-slate-100 shadow-sm mb-6 text-center">
+            <Card className="p-10 text-center">
                 <div
-                    className={`w-24 h-24 rounded-2xl mx-auto mb-5 flex items-center justify-center ${isPassing
-                        ? 'bg-emerald-50'
+                    className={`w-24 h-24 rounded-2xl mx-auto mb-5 flex items-center justify-center ring-4 ring-offset-2 ${isPassing
+                        ? 'bg-emerald-50 ring-emerald-100'
                         : isAverage
-                            ? 'bg-amber-50'
-                            : 'bg-red-50'
+                            ? 'bg-amber-50 ring-amber-100'
+                            : 'bg-red-50 ring-red-100'
                         }`}
                 >
                     {isPassing ? (
@@ -80,67 +83,65 @@ export default function ExamResults() {
                     )}
                 </div>
 
-                <h1 className="text-5xl font-bold mb-3 text-slate-800">
+                <h1 className="text-5xl font-bold mb-3 text-slate-900">
                     {result.score_percentage}%
                 </h1>
-                <p className="text-lg text-slate-500 mb-6">
-                    {isPassing ? 'Excellent!' : isAverage ? 'Good Effort!' : 'Keep Practicing!'}
+                <p className="text-lg text-slate-500 mb-8 font-medium">
+                    {isPassing ? 'Excellent work! You passed.' : isAverage ? 'Good effort! Need a bit more practice.' : 'Keep studying and try again!'}
                 </p>
 
-                <div className="flex items-center justify-center gap-6 text-sm">
-                    <div className="flex items-center gap-2">
-                        <HiOutlineCheckCircle className="w-5 h-5 text-emerald-500" />
-                        <span className="text-slate-600 font-medium">{result.correct_answers} correct</span>
+                <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-sm mb-8">
+                    <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-lg text-emerald-700 font-medium border border-emerald-100">
+                        <HiOutlineCheckCircle className="w-5 h-5" />
+                        <span>{result.correct_answers} correct</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <HiOutlineXCircle className="w-5 h-5 text-red-500" />
-                        <span className="text-slate-600 font-medium">{result.wrong_answers} wrong</span>
+                    <div className="flex items-center gap-2 px-4 py-2 bg-red-50 rounded-lg text-red-700 font-medium border border-red-100">
+                        <HiOutlineXCircle className="w-5 h-5" />
+                        <span>{result.wrong_answers} wrong</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <HiOutlineClock className="w-5 h-5 text-blue-600" />
-                        <span className="text-slate-600 font-medium">
-                            {Math.floor(result.time_taken / 60)}m {result.time_taken % 60}s
-                        </span>
+                    <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg text-blue-700 font-medium border border-blue-100">
+                        <HiOutlineClock className="w-5 h-5" />
+                        <span>{Math.floor(result.time_taken / 60)}m {result.time_taken % 60}s</span>
                     </div>
                 </div>
 
-                <div className="mt-8">
-                    <button
-                        onClick={() => navigate(`/quiz/${result.quiz_id}`)}
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-blue-900 text-white rounded-xl font-semibold text-sm hover:bg-blue-800 transition-colors shadow-sm"
-                    >
-                        <HiOutlineArrowPath className="w-5 h-5" />
-                        Retake Quiz
-                    </button>
-                </div>
-            </div>
+                <Button
+                    onClick={() => navigate(`/quiz/${result.quiz_id}`)}
+                    className="px-8"
+                >
+                    <HiOutlineArrowPath className="w-5 h-5 mr-2" />
+                    Retake Quiz
+                </Button>
+            </Card>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-6">
-                <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm text-center">
-                    <div className="text-3xl font-bold text-blue-600">{result.total_questions}</div>
-                    <div className="text-sm text-slate-500 mt-2 font-medium">Total Questions</div>
-                </div>
-                <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm text-center">
-                    <div className="text-3xl font-bold text-emerald-500">{result.correct_answers}</div>
-                    <div className="text-sm text-slate-500 mt-2 font-medium">Correct</div>
-                </div>
-                <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm text-center">
-                    <div className="text-3xl font-bold text-red-500">{result.wrong_answers}</div>
-                    <div className="text-sm text-slate-500 mt-2 font-medium">Wrong</div>
-                </div>
-                <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm text-center">
-                    <Badge variant={result.difficulty} className="mx-auto">
-                        {result.difficulty}
-                    </Badge>
-                    <div className="text-sm text-slate-500 mt-3 font-medium">Difficulty</div>
-                </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+                <Card className="p-6 text-center">
+                    <div className="text-3xl font-bold text-blue-600 mb-2">{result.total_questions}</div>
+                    <div className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Total Questions</div>
+                </Card>
+                <Card className="p-6 text-center">
+                    <div className="text-3xl font-bold text-emerald-500 mb-2">{result.correct_answers}</div>
+                    <div className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Correct</div>
+                </Card>
+                <Card className="p-6 text-center">
+                    <div className="text-3xl font-bold text-red-500 mb-2">{result.wrong_answers}</div>
+                    <div className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Wrong</div>
+                </Card>
+                <Card className="p-6 text-center flex flex-col items-center justify-center">
+                    <div className="mb-2">
+                        <Badge variant={result.difficulty}>
+                            {result.difficulty}
+                        </Badge>
+                    </div>
+                    <div className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Difficulty</div>
+                </Card>
             </div>
 
             {/* Weak Topics */}
             {result.weak_topics && result.weak_topics.length > 0 && (
-                <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm mb-6">
-                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-slate-800">
+                <Card className="p-6">
+                    <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-slate-900">
                         <HiOutlineExclamationTriangle className="w-5 h-5 text-amber-500" />
                         Topics to Review
                     </h2>
@@ -151,29 +152,24 @@ export default function ExamResults() {
                             </Badge>
                         ))}
                     </div>
-                </div>
+                </Card>
             )}
 
             {/* Detailed Answers */}
             <div>
-                <h2 className="text-lg font-semibold mb-5 text-slate-800">Detailed Review</h2>
-                <div className="space-y-5">
+                <h2 className="text-lg font-bold mb-5 text-slate-900">Detailed Review</h2>
+                <div className="space-y-6">
                     {result.answers.map((answer, index) => (
                         <QuestionCard
                             key={answer.question_id}
                             question={{
                                 question_text: answer.question_text,
                                 options: [
-                                    { option_id: 'A', option_text: '' },
-                                    { option_id: 'B', option_text: '' },
-                                    { option_id: 'C', option_text: '' },
-                                    { option_id: 'D', option_text: '' }
-                                ].map(opt => ({
-                                    ...opt,
-                                    option_text: result.answers[index]?.question_text?.includes(opt.option_id)
-                                        ? 'Option content'
-                                        : 'Option content'
-                                })),
+                                    { option_id: 'A', option_text: 'Option A' },
+                                    { option_id: 'B', option_text: 'Option B' },
+                                    { option_id: 'C', option_text: 'Option C' },
+                                    { option_id: 'D', option_text: 'Option D' }
+                                ],
                                 correct_answer: answer.correct_answer,
                                 explanation: answer.explanation
                             }}

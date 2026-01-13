@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { HiOutlineCloudArrowUp, HiOutlineDocumentText, HiOutlinePhoto, HiOutlineDocument, HiOutlineXMark } from 'react-icons/hi2';
+import Button from '../common/Button';
 
 export default function UploadZone({ onUpload, loading }) {
     const [dragActive, setDragActive] = useState(false);
@@ -59,9 +60,9 @@ export default function UploadZone({ onUpload, loading }) {
     return (
         <div className="w-full">
             <div
-                className={`border-2 border-dashed rounded-2xl p-10 text-center transition-all cursor-pointer bg-white ${dragActive
+                className={`border-2 border-dashed rounded-xl p-10 text-center transition-all cursor-pointer ${dragActive
                     ? 'border-blue-500 bg-blue-50'
-                    : 'border-slate-200 hover:border-blue-300 hover:bg-slate-50'
+                    : 'border-slate-200 hover:border-blue-400 hover:bg-slate-50'
                     }`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
@@ -82,7 +83,7 @@ export default function UploadZone({ onUpload, loading }) {
                         <HiOutlineCloudArrowUp className="w-8 h-8 text-blue-600" />
                     </div>
                     <div>
-                        <p className="text-base font-semibold text-slate-800 mb-1">
+                        <p className="text-base font-semibold text-slate-900 mb-1">
                             Drag & drop your file here
                         </p>
                         <p className="text-sm text-slate-500">
@@ -93,32 +94,33 @@ export default function UploadZone({ onUpload, loading }) {
             </div>
 
             {selectedFile && (
-                <div className="mt-4 p-5 bg-white border border-slate-100 rounded-2xl shadow-sm">
+                <div className="mt-4 p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             {getFileIcon(selectedFile.type)}
                             <div>
-                                <p className="font-semibold text-sm text-slate-800 truncate max-w-[200px]">{selectedFile.name}</p>
-                                <p className="text-xs text-slate-500 mt-1">{formatSize(selectedFile.size)}</p>
+                                <p className="font-semibold text-sm text-slate-900 truncate max-w-[200px]">{selectedFile.name}</p>
+                                <p className="text-xs text-slate-500 mt-0.5">{formatSize(selectedFile.size)}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <button
+                            <Button
+                                variant="ghost"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setSelectedFile(null);
                                 }}
-                                className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
+                                className="p-2 h-auto rounded-xl text-slate-400 hover:text-red-500"
                             >
-                                <HiOutlineXMark className="w-5 h-5 text-slate-400" />
-                            </button>
-                            <button
+                                <HiOutlineXMark className="w-5 h-5" />
+                            </Button>
+                            <Button
                                 onClick={handleUpload}
-                                disabled={loading}
-                                className="px-5 py-2.5 bg-blue-900 text-white rounded-xl font-semibold text-sm hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                loading={loading}
+                                className="px-5 py-2 text-sm"
                             >
-                                {loading ? 'Uploading...' : 'Upload'}
-                            </button>
+                                Upload
+                            </Button>
                         </div>
                     </div>
                 </div>

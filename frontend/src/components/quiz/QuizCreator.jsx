@@ -10,7 +10,8 @@ const difficulties = [
         icon: HiOutlineBolt,
         description: 'Basic recall & simple concepts',
         color: '#10b981',
-        bgColor: '#ecfdf5'
+        bgColor: '#ecfdf5',
+        ringColor: '#a7f3d0'
     },
     {
         value: 'medium',
@@ -18,7 +19,8 @@ const difficulties = [
         icon: HiOutlineCheckBadge,
         description: 'Comprehension & connections',
         color: '#f59e0b',
-        bgColor: '#fffbeb'
+        bgColor: '#fffbeb',
+        ringColor: '#fde68a'
     },
     {
         value: 'hard',
@@ -26,7 +28,8 @@ const difficulties = [
         icon: HiOutlineAcademicCap,
         description: 'Analysis & critical thinking',
         color: '#ef4444',
-        bgColor: '#fef2f2'
+        bgColor: '#fef2f2',
+        ringColor: '#fecaca'
     },
 ];
 
@@ -65,10 +68,11 @@ export default function QuizCreator({ documentId, documentTitle, onSubmit, loadi
                             key={d.value}
                             type="button"
                             onClick={() => setDifficulty(d.value)}
-                            className={`p-4 rounded-xl border transition-all text-left ${difficulty === d.value
-                                ? 'border-blue-500 bg-blue-50'
-                                : 'border-slate-200 hover:border-slate-300 bg-white'
+                            className={`p-4 rounded-xl border transition-all text-left group ${difficulty === d.value
+                                ? 'bg-white ring-2 z-10'
+                                : 'border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50'
                                 }`}
+                            style={difficulty === d.value ? { borderColor: d.color, ringColor: d.color, boxShadow: `0 0 0 1px ${d.color}` } : {}}
                         >
                             <div
                                 className="w-9 h-9 rounded-xl flex items-center justify-center mb-2"
@@ -76,7 +80,7 @@ export default function QuizCreator({ documentId, documentTitle, onSubmit, loadi
                             >
                                 <d.icon className="w-5 h-5" style={{ color: d.color }} />
                             </div>
-                            <p className="font-semibold text-slate-800 text-sm">{d.label}</p>
+                            <p className="font-semibold text-slate-900 text-sm">{d.label}</p>
                             <p className="text-xs text-slate-500 mt-1">
                                 {d.description}
                             </p>

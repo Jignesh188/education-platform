@@ -4,6 +4,7 @@ import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
 import Loader from '../components/common/Loader';
+import Card from '../components/common/Card';
 import QuizCreator from '../components/quiz/QuizCreator';
 import { documentsAPI } from '../api/documents';
 import { quizAPI } from '../api/quiz';
@@ -87,32 +88,33 @@ export default function DocumentDetail() {
     const isReady = document.processing_status === 'completed';
 
     return (
-        <div className="p-6">
+        <div className="p-6 max-w-7xl mx-auto space-y-6">
             {/* Back Button */}
-            <button
+            <Button
+                variant="ghost"
                 onClick={() => navigate('/documents')}
-                className="flex items-center gap-2 text-slate-500 hover:text-slate-700 mb-6 font-medium transition-colors text-sm"
+                className="pl-0 text-slate-500 hover:text-slate-700 font-medium h-auto"
             >
-                <HiOutlineArrowLeft className="w-4 h-4" />
+                <HiOutlineArrowLeft className="w-4 h-4 mr-2" />
                 Back to Documents
-            </button>
+            </Button>
 
             {/* Document Header */}
-            <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm mb-6">
+            <Card className="p-6">
                 <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4">
-                        <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center">
+                        <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center">
                             <HiOutlineDocumentText className="w-8 h-8 text-blue-600" />
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold mb-2 text-slate-800">{document.title}</h1>
+                            <h1 className="text-xl font-bold mb-2 text-slate-900">{document.title}</h1>
                             <div className="flex items-center gap-4 text-xs text-slate-500">
                                 <span className="flex items-center gap-1 font-medium">
                                     <HiOutlineClock className="w-4 h-4" />
                                     {new Date(document.created_at).toLocaleDateString()}
                                 </span>
                                 <span className="font-medium">{document.page_count || 1} pages</span>
-                                <span className="uppercase font-medium bg-slate-100 px-2 py-0.5 rounded">{document.file_type}</span>
+                                <span className="uppercase font-medium bg-slate-100 px-2 py-0.5 rounded text-slate-600">{document.file_type}</span>
                             </div>
                         </div>
                     </div>
@@ -128,82 +130,83 @@ export default function DocumentDetail() {
                             <>
                                 <Badge variant="error">Failed</Badge>
                                 <Button
-                                    variant="secondary"
+                                    variant="ghost"
                                     onClick={handleReprocess}
                                     loading={reprocessing}
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
                                 >
-                                    <HiOutlineArrowPath className="w-4 h-4" />
+                                    <HiOutlineArrowPath className="w-4 h-4 mr-2" />
                                     Retry
                                 </Button>
                             </>
                         )}
                         {isReady && (
                             <Button onClick={() => setShowQuizModal(true)}>
-                                <HiOutlineBookOpen className="w-4 h-4" />
+                                <HiOutlineBookOpen className="w-4 h-4 mr-2" />
                                 Create Quiz
                             </Button>
                         )}
                     </div>
                 </div>
-            </div>
+            </Card>
 
             {isProcessing && (
-                <div className="bg-white rounded-2xl border border-slate-100 p-12 text-center shadow-sm">
+                <Card className="p-12 text-center border-dashed border-2 border-slate-200 shadow-none">
                     <Loader text="AI is analyzing your document..." />
                     <p className="text-sm text-slate-500 mt-4">
                         This may take a few moments depending on document size
                     </p>
-                </div>
+                </Card>
             )}
 
             {isReady && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Summary */}
-                    <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
-                        <div className="flex items-center gap-3 mb-4">
+                    <Card className="p-6 h-full">
+                        <div className="flex items-center gap-3 mb-4 border-b border-slate-100 pb-4">
                             <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
                                 <HiOutlineBookOpen className="w-5 h-5 text-blue-600" />
                             </div>
-                            <h2 className="text-lg font-bold text-slate-800">Summary</h2>
+                            <h2 className="text-lg font-bold text-slate-900">Summary</h2>
                         </div>
-                        <p className="text-slate-600 whitespace-pre-line leading-relaxed text-sm">
+                        <div className="prose prose-slate prose-sm text-slate-600 leading-relaxed max-w-none">
                             {document.summary || 'No summary available'}
-                        </p>
-                    </div>
+                        </div>
+                    </Card>
 
                     {/* Easy Explanation */}
-                    <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
-                        <div className="flex items-center gap-3 mb-4">
+                    <Card className="p-6 h-full">
+                        <div className="flex items-center gap-3 mb-4 border-b border-slate-100 pb-4">
                             <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
                                 <HiOutlineLightBulb className="w-5 h-5 text-amber-600" />
                             </div>
-                            <h2 className="text-lg font-bold text-slate-800">Easy Explanation</h2>
+                            <h2 className="text-lg font-bold text-slate-900">Easy Explanation</h2>
                         </div>
-                        <p className="text-slate-600 whitespace-pre-line leading-relaxed text-sm">
+                        <div className="prose prose-slate prose-sm text-slate-600 leading-relaxed max-w-none">
                             {document.easy_explanation || 'No explanation available'}
-                        </p>
-                    </div>
+                        </div>
+                    </Card>
 
                     {/* Key Concepts */}
                     {document.key_concepts && document.key_concepts.length > 0 && (
-                        <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm lg:col-span-2">
-                            <div className="flex items-center gap-3 mb-4">
+                        <Card className="p-6 lg:col-span-2">
+                            <div className="flex items-center gap-3 mb-4 border-b border-slate-100 pb-4">
                                 <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
                                     <HiOutlineTag className="w-5 h-5 text-blue-600" />
                                 </div>
-                                <h2 className="text-lg font-bold text-slate-800">Key Concepts</h2>
+                                <h2 className="text-lg font-bold text-slate-900">Key Concepts</h2>
                             </div>
                             <div className="flex flex-wrap gap-2">
                                 {document.key_concepts.map((concept, index) => (
                                     <span
                                         key={index}
-                                        className="px-4 py-2 bg-blue-50 text-blue-700 rounded-xl font-medium text-sm"
+                                        className="px-4 py-2 bg-slate-50 text-slate-700 rounded-lg font-medium text-sm border border-slate-200"
                                     >
                                         {concept}
                                     </span>
                                 ))}
                             </div>
-                        </div>
+                        </Card>
                     )}
                 </div>
             )}

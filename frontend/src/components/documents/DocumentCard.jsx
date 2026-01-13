@@ -10,6 +10,7 @@ import {
     HiOutlineTrash
 } from 'react-icons/hi2';
 import Badge from '../common/Badge';
+import Card from '../common/Card';
 
 export default function DocumentCard({ document, onDelete }) {
     const navigate = useNavigate();
@@ -67,9 +68,10 @@ export default function DocumentCard({ document, onDelete }) {
     };
 
     return (
-        <div
-            className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md hover:border-blue-200 cursor-pointer group transition-all"
+        <Card
+            hover
             onClick={() => navigate(`/documents/${document.id}`)}
+            className="group p-5 bg-white border border-slate-200"
         >
             <div className="flex items-start justify-between mb-4">
                 <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center">
@@ -89,7 +91,7 @@ export default function DocumentCard({ document, onDelete }) {
                 </div>
             </div>
 
-            <h3 className="font-semibold text-sm mb-2 truncate text-slate-800">{document.title}</h3>
+            <h3 className="font-semibold text-sm mb-2 truncate text-slate-900">{document.title}</h3>
 
             {document.summary && (
                 <p className="text-xs text-slate-500 line-clamp-2 mb-4">
@@ -101,6 +103,6 @@ export default function DocumentCard({ document, onDelete }) {
                 <span className="font-medium">{document.page_count || 1} pages</span>
                 <span>{formatDate(document.created_at)}</span>
             </div>
-        </div>
+        </Card>
     );
 }

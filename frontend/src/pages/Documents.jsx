@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import UploadZone from '../components/documents/UploadZone';
 import DocumentCard from '../components/documents/DocumentCard';
 import Loader from '../components/common/Loader';
+import Card from '../components/common/Card';
+import Button from '../components/common/Button';
 import { documentsAPI } from '../api/documents';
 import { HiOutlineDocumentText, HiOutlineChevronLeft, HiOutlineChevronRight } from 'react-icons/hi2';
 
@@ -63,28 +65,28 @@ export default function Documents() {
     }
 
     return (
-        <div className="p-6">
+        <div className="p-6 max-w-7xl mx-auto space-y-8">
             {/* Page Header */}
-            <div className="mb-8">
-                <h1 className="text-2xl font-bold text-slate-800">Documents</h1>
+            <div>
+                <h1 className="text-2xl font-bold text-slate-900">Documents</h1>
                 <p className="text-slate-500 text-sm mt-1">Upload and manage your learning materials</p>
             </div>
 
             {/* Upload Section */}
-            <div className="mb-10">
-                <h2 className="text-base font-semibold text-slate-800 mb-4">Upload New Document</h2>
+            <Card className="p-6">
+                <h2 className="text-base font-semibold text-slate-900 mb-4">Upload New Document</h2>
                 <UploadZone onUpload={handleUpload} loading={uploading} />
-            </div>
+            </Card>
 
             {/* Documents List */}
             <div>
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-base font-semibold text-slate-800">Your Documents</h2>
-                    <span className="text-sm text-slate-500 font-medium bg-slate-100 px-3 py-1 rounded-full">{total} documents</span>
+                    <h2 className="text-lg font-bold text-slate-900">Your Documents</h2>
+                    <span className="text-xs text-slate-500 font-medium bg-slate-100 px-3 py-1 rounded-full">{total} documents</span>
                 </div>
 
                 {documents.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {documents.map((doc) => (
                             <DocumentCard
                                 key={doc.id}
@@ -94,39 +96,41 @@ export default function Documents() {
                         ))}
                     </div>
                 ) : (
-                    <div className="bg-white rounded-2xl border border-slate-100 p-12 text-center shadow-sm">
-                        <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+                    <Card className="p-12 text-center border-dashed border-2 border-slate-200 shadow-none">
+                        <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-4">
                             <HiOutlineDocumentText className="w-8 h-8 text-slate-400" />
                         </div>
-                        <h3 className="text-base font-semibold mb-2 text-slate-800">No documents yet</h3>
+                        <h3 className="text-base font-semibold mb-2 text-slate-900">No documents yet</h3>
                         <p className="text-sm text-slate-500 mb-4 max-w-sm mx-auto">
                             Upload your first document to get started with AI-powered learning
                         </p>
-                    </div>
+                    </Card>
                 )}
 
                 {/* Pagination */}
                 {total > 12 && (
                     <div className="flex justify-center gap-3 mt-8">
-                        <button
+                        <Button
+                            variant="secondary"
                             onClick={() => setPage(p => Math.max(1, p - 1))}
                             disabled={page === 1}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl font-medium text-sm hover:bg-slate-50 hover:border-slate-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            className="flex items-center gap-2 px-4 py-2"
                         >
                             <HiOutlineChevronLeft className="w-4 h-4" />
                             Previous
-                        </button>
+                        </Button>
                         <span className="flex items-center px-4 text-sm text-slate-600 font-medium">
                             Page {page} of {Math.ceil(total / 12)}
                         </span>
-                        <button
+                        <Button
+                            variant="secondary"
                             onClick={() => setPage(p => p + 1)}
                             disabled={page >= Math.ceil(total / 12)}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl font-medium text-sm hover:bg-slate-50 hover:border-slate-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            className="flex items-center gap-2 px-4 py-2"
                         >
                             Next
                             <HiOutlineChevronRight className="w-4 h-4" />
-                        </button>
+                        </Button>
                     </div>
                 )}
             </div>
