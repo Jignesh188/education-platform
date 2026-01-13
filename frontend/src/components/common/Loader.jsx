@@ -1,27 +1,15 @@
-import { HiOutlineAcademicCap, HiOutlineBookOpen, HiOutlinePencil } from 'react-icons/hi2';
-
 export default function Loader({ text = 'Loading...' }) {
     return (
-        <div className="student-loader">
-            <div className="flex items-center gap-6">
-                <div className="student-icon">
-                    <HiOutlineAcademicCap className="w-full h-full text-blue-600" />
-                </div>
-                <div className="book-icon">
-                    <HiOutlineBookOpen className="w-14 h-14 text-blue-400" />
-                </div>
-                <div className="pen-icon">
-                    <HiOutlinePencil className="w-12 h-12 text-blue-300" />
-                </div>
+        <div className="flex flex-col items-center justify-center p-8 space-y-4">
+            <div className="relative w-12 h-12">
+                <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-100 rounded-full"></div>
+                <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-600 rounded-full animate-spin border-t-transparent"></div>
             </div>
-
-            <div className="loading-dots">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-
-            <p className="text-slate-600 text-base font-semibold">{text}</p>
+            {text && (
+                <p className="text-slate-500 text-sm font-medium animate-pulse">
+                    {text}
+                </p>
+            )}
         </div>
     );
 }

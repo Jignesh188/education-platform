@@ -40,13 +40,26 @@ export default function Register() {
             return;
         }
 
+        // Email validation regex (production-grade)
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(email)) {
+             setError('Please enter a valid email address');
+             return;
+        }
+
         setLoading(true);
 
         try {
             await register({ name, email, password });
             navigate('/dashboard');
         } catch (err) {
-            setError(err.response?.data?.detail || 'Registration failed. Please try again.');
+            // Check for potential duplicate user error
+            const errorMessage = err.response?.data?.detail;
+            if (errorMessage && (errorMessage.toLowerCase().includes('already exists') || errorMessage.toLowerCase().includes('duplicate'))) {
+                setError('This email is already registered. Please sign in instead.');
+            } else {
+                 setError(errorMessage || 'Registration failed. Please try again.');
+            }
         } finally {
             setLoading(false);
         }

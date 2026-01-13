@@ -2,7 +2,13 @@ import httpx
 import base64
 import json
 from typing import Optional, List, Dict, Any
+try:
+    import wikipedia
+except ImportError:
+    wikipedia = None
+
 from app.config import settings
+from app.utils.logger import logger, log_ai_operation
 
 
 class AIService:
@@ -36,7 +42,7 @@ class AIService:
                 result = response.json()
                 return result.get("response", "")
             except Exception as e:
-                print(f"AI Service Error: {e}")
+                logger.error(f"AI Service Error: {e}", exc_info=True)
                 raise
     
     async def _make_chat_request(self, messages: List[Dict], images: List[str] = None) -> str:
@@ -63,7 +69,7 @@ class AIService:
                 result = response.json()
                 return result.get("message", {}).get("content", "")
             except Exception as e:
-                print(f"AI Chat Service Error: {e}")
+                logger.error(f"AI Chat Service Error: {e}", exc_info=True)
                 raise
     
     def _encode_image(self, image_path: str) -> str:
@@ -80,25 +86,46 @@ class AIService:
         If there are diagrams or figures, describe them briefly.
         Return only the extracted text content."""
         
+        log_ai_operation("Text Extraction", f"Processing {image_path}")
         return await self._make_request(prompt, images=[image_base64])
     
     async def generate_summary(self, text: str, title: str = "") -> str:
-        """Generate a concise summary of the document."""
+        """
+        Generate a concise, clean text summary of the document.
+        Handles potentially large text by chunking if necessary (though simplified here for context).
+        Enforces strict plain text output (no markdown).
+        """
+        # Chunking strategy: If text is too long (> 12000 chars), take the first, middle, and last chunks
+        # to ensure the model doesn't choke, while still getting a good overview.
+        # Ideally, we would summarize chunks and combine, but for speed, representative sampling works well.
+        if len(text) > 20000:
+            chunk_size = 6000
+            start = text[:chunk_size]
+            middle_idx = len(text) // 2
+            middle = text[middle_idx - 2000 : middle_idx + 2000]
+            end = text[-chunk_size:]
+            processed_text = f"{start}\n...\n{middle}\n...\n{end}"
+        else:
+            processed_text = text
+
         prompt = f"""You are an educational content summarizer. Create a clear, concise summary of the following document content.
 
 Document Title: {title}
 
 Content:
-{text[:8000]}
+{processed_text}
 
 Instructions:
-1. Identify the main topics and key points
-2. Create a structured summary with bullet points
-3. Keep it concise but comprehensive
-4. Use simple, clear language
+1. Identify the main topics and key points.
+2. Create a well-structured summary.
+3. CRITICAL: Return output as PLAIN TEXT ONLY. Do NOT use markdown, asterisks (**), bolding, bullet points (* or -), or hash symbols (#).
+4. Use standard paragraphs and numbering (1. 2. 3.) only if absolutely necessary for list items.
+5. Keep it concise but comprehensive.
+6. Use simple, clear language.
 
-Provide the summary now:"""
+Provide the plain text summary now:"""
         
+        log_ai_operation("Generate Summary", title)
         return await self._make_request(prompt)
     
     async def generate_easy_explanation(self, text: str, title: str = "") -> str:
@@ -120,6 +147,7 @@ Instructions:
 
 Provide the easy explanation now:"""
         
+        log_ai_operation("Generate Explanation", title)
         return await self._make_request(prompt)
     
     async def extract_key_concepts(self, text: str) -> List[str]:
@@ -134,6 +162,7 @@ Return a JSON array of key concepts. Example format:
 
 Return ONLY the JSON array, nothing else:"""
         
+        log_ai_operation("Extract Concepts")
         response = await self._make_request(prompt)
         
         try:
@@ -196,6 +225,7 @@ Important:
 
 Return ONLY the JSON array:"""
         
+        log_ai_operation("Generate Quiz", f"{title} ({difficulty})")
         response = await self._make_request(prompt)
         
         try:
@@ -241,6 +271,7 @@ Return a JSON array of topic names. Example: ["Topic 1", "Topic 2", "Topic 3"]
 
 Return ONLY the JSON array:"""
         
+        log_ai_operation("Analyze Weak Topics")
         response = await self._make_request(prompt)
         
         try:
@@ -251,6 +282,67 @@ Return ONLY the JSON array:"""
             pass
         
         return ["General review recommended"]
+    
+    async def generate_page_insights(self, page_text: str, page_number: int) -> Dict[str, Any]:
+        """Generate insights for a specific page."""
+        prompt = f"""Analyze the following content from page {page_number} of a document.
+
+Content:
+{page_text[:4000]}
+
+Instructions:
+1. Summarize the main point of this page in 1-2 sentences (clean text).
+2. Extract up to 3 key points (clean text).
+3. Identify the single most important 'focus topic' of this page.
+
+Return ONLY a JSON object in this format:
+{{
+  "content": "Summary sentence here.",
+  "key_points": ["Point 1", "Point 2", "Point 3"],
+  "focus_topic": "Main Topic"
+}}"""
+        
+        log_ai_operation("Page Insights", f"Page {page_number}")
+        response = await self._make_request(prompt)
+        
+        try:
+            import re
+            json_match = re.search(r'\{[\s\S]*\}', response)
+            if json_match:
+                return json.loads(json_match.group())
+        except:
+            pass
+            
+        return {
+            "content": "Content analysis failed.",
+            "key_points": [],
+            "focus_topic": None
+        }
+
+    async def enrich_context_with_wiki(self, terms: List[str]) -> List[Dict[str, str]]:
+        """Fetch Wikipedia definitions for terms."""
+        results = []
+        if not wikipedia or not terms:
+            return results
+            
+        for term in terms[:5]: # XMLLimit to top 5 terms to avoid slowness
+            try:
+                # Basic search to get closest match
+                search_res = wikipedia.search(term, results=1)
+                if not search_res:
+                    continue
+                    
+                page = wikipedia.page(search_res[0], auto_suggest=False)
+                results.append({
+                    "term": term,
+                    "definition": page.summary[:300] + "...",
+                    "url": page.url
+                })
+            except Exception as e:
+                logger.warning(f"Wiki error for {term}: {e}")
+                continue
+                
+        return results
 
 
 # Singleton instance

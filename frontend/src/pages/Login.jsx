@@ -26,13 +26,21 @@ export default function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+
+        // Email validation regex (production-grade)
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(email)) {
+             setError('Please enter a valid email address');
+             return;
+        }
+
         setLoading(true);
 
         try {
             await login({ email, password });
             navigate('/dashboard');
         } catch (err) {
-            setError(err.response?.data?.detail || 'Login failed. Please try again.');
+            setError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
         } finally {
             setLoading(false);
         }

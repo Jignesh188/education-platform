@@ -38,7 +38,8 @@ export default function Documents() {
             setTotal(total + 1);
         } catch (error) {
             console.error('Upload failed:', error);
-            alert('Upload failed. Please try again.');
+            const message = error.response?.data?.detail || 'Upload failed. Please try again.';
+            alert(message);
         } finally {
             setUploading(false);
         }

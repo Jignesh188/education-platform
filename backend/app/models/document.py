@@ -19,6 +19,21 @@ class DocumentCreate(BaseModel):
     file_size: int
 
 
+class PageSummary(BaseModel):
+    """Summary and insights for a specific page."""
+    page_number: int
+    content: str
+    key_points: List[str]
+    focus_topic: Optional[str] = None
+
+
+class WikiContext(BaseModel):
+    """Wikipedia context for a term."""
+    term: str
+    definition: str
+    url: str
+
+
 class DocumentResponse(BaseModel):
     """Document response model."""
     id: str
@@ -28,8 +43,10 @@ class DocumentResponse(BaseModel):
     file_size: int
     extracted_text: Optional[str] = None
     summary: Optional[str] = None
+    page_summaries: List[PageSummary] = []
     easy_explanation: Optional[str] = None
     key_concepts: List[str] = []
+    wiki_context: List[WikiContext] = []
     page_count: int = 0
     processing_status: ProcessingStatus = ProcessingStatus.PENDING
     created_at: datetime

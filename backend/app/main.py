@@ -16,7 +16,6 @@ async def lifespan(app: FastAPI):
     logger.info("Connecting to MongoDB Atlas...")
     await connect_to_mongo()
     logger.info("Server ready to accept connections")
-    print()
     yield
     # Shutdown
     logger.info("Shutting down server...")

@@ -160,53 +160,121 @@ export default function DocumentDetail() {
             )}
 
             {isReady && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Summary */}
-                    <Card className="p-6 h-full">
-                        <div className="flex items-center gap-3 mb-4 border-b border-slate-100 pb-4">
-                            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
-                                <HiOutlineBookOpen className="w-5 h-5 text-blue-600" />
-                            </div>
-                            <h2 className="text-lg font-bold text-slate-900">Summary</h2>
-                        </div>
-                        <div className="prose prose-slate prose-sm text-slate-600 leading-relaxed max-w-none">
-                            {document.summary || 'No summary available'}
-                        </div>
-                    </Card>
-
-                    {/* Easy Explanation */}
-                    <Card className="p-6 h-full">
-                        <div className="flex items-center gap-3 mb-4 border-b border-slate-100 pb-4">
-                            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
-                                <HiOutlineLightBulb className="w-5 h-5 text-amber-600" />
-                            </div>
-                            <h2 className="text-lg font-bold text-slate-900">Easy Explanation</h2>
-                        </div>
-                        <div className="prose prose-slate prose-sm text-slate-600 leading-relaxed max-w-none">
-                            {document.easy_explanation || 'No explanation available'}
-                        </div>
-                    </Card>
-
-                    {/* Key Concepts */}
-                    {document.key_concepts && document.key_concepts.length > 0 && (
-                        <Card className="p-6 lg:col-span-2">
+                <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Summary */}
+                        <Card className="p-6 h-full">
                             <div className="flex items-center gap-3 mb-4 border-b border-slate-100 pb-4">
                                 <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
-                                    <HiOutlineTag className="w-5 h-5 text-blue-600" />
+                                    <HiOutlineBookOpen className="w-5 h-5 text-blue-600" />
                                 </div>
-                                <h2 className="text-lg font-bold text-slate-900">Key Concepts</h2>
+                                <h2 className="text-lg font-bold text-slate-900">Summary</h2>
                             </div>
-                            <div className="flex flex-wrap gap-2">
-                                {document.key_concepts.map((concept, index) => (
-                                    <span
-                                        key={index}
-                                        className="px-4 py-2 bg-slate-50 text-slate-700 rounded-lg font-medium text-sm border border-slate-200"
-                                    >
-                                        {concept}
-                                    </span>
-                                ))}
+                            <div className="prose prose-slate prose-sm text-slate-600 leading-relaxed max-w-none">
+                                {document.summary || 'No summary available'}
                             </div>
                         </Card>
+
+                        {/* Easy Explanation */}
+                        <Card className="p-6 h-full">
+                            <div className="flex items-center gap-3 mb-4 border-b border-slate-100 pb-4">
+                                <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+                                    <HiOutlineLightBulb className="w-5 h-5 text-amber-600" />
+                                </div>
+                                <h2 className="text-lg font-bold text-slate-900">Easy Explanation</h2>
+                            </div>
+                            <div className="prose prose-slate prose-sm text-slate-600 leading-relaxed max-w-none">
+                                {document.easy_explanation || 'No explanation available'}
+                            </div>
+                        </Card>
+
+                        {/* Key Concepts */}
+                        {document.key_concepts && document.key_concepts.length > 0 && (
+                            <Card className="p-6 lg:col-span-2">
+                                <div className="flex items-center gap-3 mb-4 border-b border-slate-100 pb-4">
+                                    <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                                        <HiOutlineTag className="w-5 h-5 text-blue-600" />
+                                    </div>
+                                    <h2 className="text-lg font-bold text-slate-900">Key Concepts</h2>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {document.key_concepts.map((concept, index) => (
+                                        <span
+                                            key={index}
+                                            className="px-4 py-2 bg-slate-50 text-slate-700 rounded-lg font-medium text-sm border border-slate-200"
+                                        >
+                                            {concept}
+                                        </span>
+                                    ))}
+                                </div>
+                            </Card>
+                        )}
+                    </div>
+                    
+                    {/* Wiki Context */}
+                    {document.wiki_context && document.wiki_context.length > 0 && (
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                <HiOutlineLightBulb className="w-5 h-5 text-yellow-500" />
+                                Knowledge Context
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {document.wiki_context.map((bg, idx) => (
+                                    <Card key={idx} className="p-4 bg-slate-50 border-slate-200">
+                                        <h4 className="font-bold text-slate-800 mb-2">{bg.term}</h4>
+                                        <p className="text-xs text-slate-600 mb-3 line-clamp-4">{bg.definition}</p>
+                                        <a 
+                                            href={bg.url} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                                        >
+                                            Read on Wikipedia →
+                                        </a>
+                                    </Card>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    
+                    {/* Page Insights */}
+                    {document.page_summaries && document.page_summaries.length > 0 && (
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                <HiOutlineDocumentText className="w-5 h-5 text-blue-500" />
+                                Page-by-Page Analysis
+                            </h3>
+                            <div className="grid grid-cols-1 gap-4">
+                                {document.page_summaries.map((page) => (
+                                    <Card key={page.page_number} className="p-4 border-l-4 border-l-blue-500">
+                                        <div className="flex flex-col md:flex-row gap-4">
+                                            <div className="md:w-32 flex-shrink-0">
+                                                <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full mb-2">
+                                                    Page {page.page_number}
+                                                </span>
+                                                {page.focus_topic && (
+                                                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+                                                        {page.focus_topic}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-sm text-slate-700 mb-3 font-medium leading-relaxed">
+                                                    {page.content}
+                                                </p>
+                                                {page.key_points && page.key_points.length > 0 && (
+                                                    <ul className="list-disc list-inside text-xs text-slate-500 space-y-1 bg-slate-50 p-3 rounded-lg">
+                                                        {page.key_points.map((point, k) => (
+                                                            <li key={k}>{point}</li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </Card>
+                                ))}
+                            </div>
+                        </div>
                     )}
                 </div>
             )}

@@ -14,6 +14,7 @@ from app.utils.file_handler import (
     delete_file
 )
 from app.services.ai_service import ai_service
+from app.utils.logger import logger
 
 router = APIRouter()
 
@@ -41,6 +42,8 @@ async def process_document(document_id: str, file_path: str, file_type: str, tit
     """Background task to process document with AI."""
     documents = get_documents_collection()
     
+    logger.info(f"🔄 Processing │ Started processing document: {title} ({document_id})")
+    
     try:
         # Update status to processing
         await documents.update_one(
@@ -51,22 +54,45 @@ async def process_document(document_id: str, file_path: str, file_type: str, tit
         # Extract text
         if file_type == "image":
             # Use AI to extract text from image
+            logger.info(f"🔄 Processing │ Extracting text from image for {document_id}")
             extracted_text = await ai_service.extract_text_from_image(file_path)
             page_count = 1
+            pages = [extracted_text] if extracted_text else []
         else:
-            extracted_text, page_count = extract_text(file_path, file_type)
+            logger.info(f"🔄 Processing │ Extracting text from {file_type} for {document_id}")
+            extracted_text, page_count, pages = extract_text(file_path, file_type)
         
         if not extracted_text:
             raise Exception("Failed to extract text from document")
         
-        # Generate summary
+        logger.info(f"🔄 Processing │ Generatng summary for {document_id}")
+        # Generate summary (Clean Text)
         summary = await ai_service.generate_summary(extracted_text, title)
         
+        # Generate per-page insights
+        page_summaries = []
+        logger.info(f"🔄 Processing │ Generatng insights for {len(pages)} pages")
+        for i, page_text in enumerate(pages):
+            if not page_text.strip():
+                continue
+            # Process pages (sequentially for now to avoid rate limits/complexity)
+            insight = await ai_service.generate_page_insights(page_text, i + 1)
+            page_summaries.append({
+                "page_number": i + 1,
+                "content": insight.get("content", ""),
+                "key_points": insight.get("key_points", []),
+                "focus_topic": insight.get("focus_topic")
+            })
+
+        logger.info(f"🔄 Processing │ Generatng easy explanation for {document_id}")
         # Generate easy explanation
         easy_explanation = await ai_service.generate_easy_explanation(extracted_text, title)
         
         # Extract key concepts
         key_concepts = await ai_service.extract_key_concepts(extracted_text)
+        
+        # Fetch Wikipedia context for top concepts
+        wiki_context = await ai_service.enrich_context_with_wiki(key_concepts)
         
         # Update document with results
         await documents.update_one(
@@ -76,14 +102,18 @@ async def process_document(document_id: str, file_path: str, file_type: str, tit
                 "summary": summary,
                 "easy_explanation": easy_explanation,
                 "key_concepts": key_concepts,
+                "page_summaries": page_summaries,
+                "wiki_context": wiki_context,
                 "page_count": page_count,
                 "processing_status": ProcessingStatus.COMPLETED,
                 "updated_at": datetime.utcnow()
             }}
         )
         
+        logger.info(f"✅ Processing │ Successfully completed for {title} ({document_id})")
+        
     except Exception as e:
-        print(f"Document processing error: {e}")
+        logger.error(f"❌ Processing │ Failed for {document_id}: {e}", exc_info=True)
         await documents.update_one(
             {"_id": ObjectId(document_id)},
             {"$set": {
@@ -100,13 +130,30 @@ async def upload_document(
     current_user: dict = Depends(get_current_user)
 ):
     """Upload a document for processing."""
+    logger.info(f"📤 Upload │ User {current_user['_id']} uploading {file.filename}")
+    
     # Validate file type
     if not is_allowed_file(file.content_type):
+        logger.warning(f"⚠️ Upload │ Invalid file type {file.content_type} for {file.filename}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="File type not allowed. Allowed types: PDF, DOCX, JPEG, PNG, GIF, WebP"
         )
     
+    # Check for duplicate document
+    documents = get_documents_collection()
+    existing_doc = await documents.find_one({
+        "user_id": current_user["_id"],
+        "title": file.filename
+    })
+    
+    if existing_doc:
+        logger.warning(f"⚠️ Upload │ Duplicate document {file.filename}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Document '{file.filename}' already exists."
+        )
+
     # Save file
     user_id = str(current_user["_id"])
     file_path, file_size = await save_upload_file(file, user_id)
@@ -143,6 +190,7 @@ async def upload_document(
     )
     
     # Start background processing
+    logger.info(f"🔄 Upload │ Queuing background processing for {result.inserted_id}")
     background_tasks.add_task(
         process_document,
         str(result.inserted_id),
@@ -161,6 +209,7 @@ async def list_documents(
     current_user: dict = Depends(get_current_user)
 ):
     """List user's documents."""
+    logger.debug(f"📂 List Docs │ User {current_user['_id']} requesting page {page}")
     documents = get_documents_collection()
     
     skip = (page - 1) * limit
@@ -186,6 +235,7 @@ async def get_document(
     current_user: dict = Depends(get_current_user)
 ):
     """Get a specific document."""
+    logger.info(f"👀 View Doc │ User {current_user['_id']} accessing {document_id}")
     documents = get_documents_collection()
     
     try:
@@ -197,6 +247,7 @@ async def get_document(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
     
     if not doc:
+        logger.warning(f"⚠️ View Doc │ Document {document_id} not found for user")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
     
     return document_to_response(doc)
@@ -208,6 +259,7 @@ async def delete_document(
     current_user: dict = Depends(get_current_user)
 ):
     """Delete a document."""
+    logger.info(f"🗑️ Delete Doc │ User {current_user['_id']} deleting {document_id}")
     documents = get_documents_collection()
     
     try:
@@ -244,6 +296,7 @@ async def reprocess_document(
     current_user: dict = Depends(get_current_user)
 ):
     """Reprocess a document with AI."""
+    logger.info(f"🔄 Reprocess │ User {current_user['_id']} requesting reprocessing for {document_id}")
     documents = get_documents_collection()
     
     try:
