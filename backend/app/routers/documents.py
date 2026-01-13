@@ -69,6 +69,12 @@ async def process_document(document_id: str, file_path: str, file_type: str, tit
         # Generate summary (Clean Text)
         summary = await ai_service.generate_summary(extracted_text, title)
         
+        # Initialize page_summaries in DB
+        await documents.update_one(
+            {"_id": ObjectId(document_id)},
+            {"$set": {"summary": summary, "page_summaries": []}}
+        )
+        
         # Generate per-page insights
         page_summaries = []
         logger.info(f"🔄 Processing │ Generatng insights for {len(pages)} pages")
@@ -77,12 +83,21 @@ async def process_document(document_id: str, file_path: str, file_type: str, tit
                 continue
             # Process pages (sequentially for now to avoid rate limits/complexity)
             insight = await ai_service.generate_page_insights(page_text, i + 1)
-            page_summaries.append({
+            
+            page_summary = {
                 "page_number": i + 1,
                 "content": insight.get("content", ""),
                 "key_points": insight.get("key_points", []),
                 "focus_topic": insight.get("focus_topic")
-            })
+            }
+            
+            page_summaries.append(page_summary)
+            
+            # Incrementally update DB
+            await documents.update_one(
+                {"_id": ObjectId(document_id)},
+                {"$push": {"page_summaries": page_summary}}
+            )
 
         logger.info(f"🔄 Processing │ Generatng easy explanation for {document_id}")
         # Generate easy explanation
@@ -99,10 +114,9 @@ async def process_document(document_id: str, file_path: str, file_type: str, tit
             {"_id": ObjectId(document_id)},
             {"$set": {
                 "extracted_text": extracted_text,
-                "summary": summary,
                 "easy_explanation": easy_explanation,
                 "key_concepts": key_concepts,
-                "page_summaries": page_summaries,
+                # page_summaries is already updated incrementally
                 "wiki_context": wiki_context,
                 "page_count": page_count,
                 "processing_status": ProcessingStatus.COMPLETED,
